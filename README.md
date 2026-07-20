@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project implements **Optical Character Recognition (OCR)** for Indonesian vehicle license plates using a **Visual Language Model (VLM)**. The model used is **LLaVA 1.6 Mistral 7B**, which runs locally through **LM Studio** and is accessed via the OpenAI-compatible API.
+This project implements **Optical Character Recognition (OCR)** for Indonesian vehicle license plates using a **Visual Language Model (VLM)**. The model used is **qwen2-vl-2b-instruct**, which runs locally through **LM Studio** and is accessed via the OpenAI-compatible API.
 
 The system reads license plate images, performs OCR using the VLM, compares the predicted text with the ground truth, and evaluates the performance using **Character Error Rate (CER)**.
 
@@ -249,7 +249,7 @@ output/prediction.csv
 
 - Python
 - LM Studio
-- LLaVA 1.6 Mistral 7B
+- qwen2-vl-2b-instruct
 - OpenAI Python SDK
 - Pandas
 - Regular Expression (Regex)
