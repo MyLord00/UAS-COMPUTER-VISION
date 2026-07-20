@@ -1,4 +1,4 @@
-# Indonesian License Plate Recognition using Visual Language Model (LLaVA 1.6)
+# Indonesian License Plate Recognition using Visual Language Model (qwen2-vl-2b-instruct)
 
 ## Overview
 
@@ -95,7 +95,7 @@ Example:
 Start LM Studio and load:
 
 ```
-llava-1.6-mistral-7b
+qwen2-vl-2b-instruct
 ```
 
 Enable the local server.
