@@ -1,35 +1,28 @@
-# Indonesian License Plate Recognition using Visual Language Model (qwen2-vl-2b-instruct)
+# Indonesian License Plate Recognition using Qwen2-VL-2B-Instruct
 
-## Overview
-
-This project implements **Optical Character Recognition (OCR)** for Indonesian vehicle license plates using a **Visual Language Model (VLM)**. The model used is **qwen2-vl-2b-instruct**, which runs locally through **LM Studio** and is accessed via the OpenAI-compatible API.
-
-The system reads license plate images, performs OCR using the VLM, compares the predicted text with the ground truth, and evaluates the performance using **Character Error Rate (CER)**.
+This project implements **Optical Character Recognition (OCR)** for Indonesian vehicle license plates using the **Qwen2-VL-2B-Instruct** Visual Language Model (VLM) running locally with **LM Studio**. The model predicts the license plate number from an image, and the prediction is evaluated using **Character Error Rate (CER)**.
 
 ---
 
 ## Features
 
-- OCR for Indonesian license plates using Visual Language Model
-- Local inference with LM Studio
-- Python implementation using OpenAI API
-- Automatic evaluation using Character Error Rate (CER)
-- Outputs prediction results to CSV
+- Visual Language Model (VLM) based OCR
+- Local inference using LM Studio
+- Python implementation with OpenAI API
+- Automatic CER calculation
+- Save prediction results to CSV
 
 ---
 
 ## Project Structure
 
-```
-project/
-│
-├── dataset/
-│   └── images/
-│       └── test/
-│
-├── output/
+```text
+.
+├── dataset
+│   └── images
+│       └── test
+├── output
 │   └── prediction.csv
-│
 ├── ground_truth.csv
 ├── main.py
 ├── cer.py
@@ -43,9 +36,9 @@ project/
 
 - Python 3.10+
 - LM Studio
-- qwen2-vl-2b-instruct
-- Pandas
+- Qwen2-VL-2B-Instruct
 - OpenAI Python SDK
+- Pandas
 
 Install dependencies:
 
@@ -56,35 +49,33 @@ pip install -r requirements.txt
 or
 
 ```bash
-pip install pandas openai
+pip install openai pandas
 ```
 
 ---
 
 ## Dataset
 
-Dataset:
+The project uses the **Indonesian License Plate Recognition Dataset**.
 
-**Indonesian License Plate Recognition Dataset**
+Directory structure:
 
-Project structure:
-
-```
+```text
 dataset/
 └── images/
     └── test/
 ```
 
-Ground truth is stored in:
+Ground truth labels:
 
-```
+```text
 ground_truth.csv
 ```
 
 Example:
 
 | image | ground_truth |
-|--------|--------------|
+|-------|--------------|
 | test001_1.jpg | B9140BCD |
 | test001_2.jpg | B2407UZO |
 
@@ -92,60 +83,58 @@ Example:
 
 ## LM Studio Configuration
 
-Start LM Studio and load:
+1. Open LM Studio.
+2. Load **Qwen2-VL-2B-Instruct**.
+3. Start the Local Server.
 
-```
-qwen2-vl-2b-instruct
-```
-
-Enable the local server.
-
-Default endpoint:
-
-```
-http://127.0.0.1:1234/v1
-```
-
-The program connects using:
+Example configuration:
 
 ```python
 client = OpenAI(
     base_url="http://127.0.0.1:1234/v1",
-    api_key="lm-studio"
+    api_key="lm-studio",
+    timeout=300
 )
+```
+
+Model:
+
+```python
+MODEL_NAME = "qwen2-vl-2b-instruct"
 ```
 
 ---
 
-## Workflow
+## OCR Workflow
 
-```
+```text
 License Plate Image
-          │
-          ▼
-Python
-          │
-          ▼
+        │
+        ▼
+Read Image (Python)
+        │
+        ▼
 Convert Image to Base64
-          │
-          ▼
-LM Studio
-(LLaVA 1.6 Mistral)
-          │
-          ▼
+        │
+        ▼
+Send Request to LM Studio
+        │
+        ▼
+Qwen2-VL-2B-Instruct
+        │
+        ▼
 Prediction
-          │
-          ▼
-Clean Prediction
-(Regex)
-          │
-          ▼
-Ground Truth
-          │
-          ▼
+        │
+        ▼
+Clean Prediction (Regex)
+        │
+        ▼
+Ground Truth Comparison
+        │
+        ▼
 CER Evaluation
-          │
-          ▼
+        │
+        ▼
 prediction.csv
 ```
 
@@ -153,12 +142,17 @@ prediction.csv
 
 ## OCR Prompt
 
-The following prompt is used during inference:
-
 ```text
+You are an OCR system.
+
 Read the Indonesian vehicle license plate.
 
-Return ONLY the plate number.
+Rules:
+- Return ONLY the license plate.
+- Do not explain.
+- Do not add any extra words.
+- Remove all spaces.
+- Output must contain only uppercase letters and digits.
 
 Example:
 B1234XYZ
@@ -168,11 +162,9 @@ B1234XYZ
 
 ## Character Error Rate (CER)
 
-Performance is evaluated using Character Error Rate.
+CER is calculated using the following equation:
 
-Formula:
-
-```
+```text
 CER = (S + D + I) / N
 ```
 
@@ -187,24 +179,25 @@ Example:
 
 Ground Truth
 
-```
+```text
 B2407UZO
 ```
 
 Prediction
 
-```
+```text
 B2407UZ
 ```
 
 Result
 
-```
+```text
 S = 0
 D = 1
 I = 0
 N = 8
 
+CER = (0 + 1 + 0) / 8
 CER = 0.125
 ```
 
@@ -212,19 +205,22 @@ CER = 0.125
 
 ## Running
 
-Run:
+Run the project:
 
 ```bash
 python main.py
 ```
 
-The program will
+The program will:
 
-- Read all images
-- Send images to LM Studio
-- Predict license plate numbers
-- Calculate CER
-- Save the results
+1. Read all images from the test dataset.
+2. Convert images into Base64 format.
+3. Send the images to LM Studio.
+4. Predict the license plate number.
+5. Clean the prediction using Regular Expression.
+6. Compare prediction with Ground Truth.
+7. Calculate Character Error Rate.
+8. Save the results to `prediction.csv`.
 
 ---
 
@@ -233,13 +229,13 @@ The program will
 Example:
 
 | image | ground_truth | prediction | S | D | I | N | CER_score |
-|--------|--------------|------------|---|---|---|---|-----------|
+|-------|--------------|------------|---|---|---|---|-----------|
 | test001_1.jpg | B9140BCD | B9140BCD | 0 | 0 | 0 | 8 | 0.0000 |
 | test001_2.jpg | B2407UZO | B2407UZ | 0 | 1 | 0 | 8 | 0.1250 |
 
 Output file:
 
-```
+```text
 output/prediction.csv
 ```
 
@@ -248,9 +244,9 @@ output/prediction.csv
 ## Technologies
 
 - Python
+- Qwen2-VL-2B-Instruct
 - LM Studio
-- qwen2-vl-2b-instruct
-- OpenAI Python SDK
+- OpenAI API
 - Pandas
 - Regular Expression (Regex)
 
@@ -258,7 +254,7 @@ output/prediction.csv
 
 ## Author
 
-Arya Wardana
+**Arya Wardana**
 
 Computer Vision Project
 
