@@ -6,31 +6,25 @@ import pandas as pd
 from openai import OpenAI
 from cer import calculate_cer
 
-# ==============================
+
 # Konfigurasi LM Studio
-# ==============================
 client = OpenAI(
     base_url="http://127.0.0.1:1234/v1",
     api_key="lm-studio",
     timeout=300
 )
 
-MODEL_NAME = "llava-1.6-mistral-7b"
+MODEL_NAME = "qwen2-vl-2b-instruct"
 
-# ==============================
+
 # Folder Dataset
-# ==============================
 IMAGE_FOLDER = "dataset/images/test"
 GROUND_TRUTH_FILE = "ground_truth.csv"
 
-# ==============================
 # Membaca Ground Truth
-# ==============================
 gt_df = pd.read_csv(GROUND_TRUTH_FILE)
 
-# ==============================
 # Membersihkan hasil OCR
-# ==============================
 def clean_prediction(text):
 
     if text is None:
@@ -51,9 +45,7 @@ def clean_prediction(text):
 
 results = []
 
-# ==============================
 # Loop seluruh gambar
-# ==============================
 for filename in sorted(os.listdir(IMAGE_FOLDER)):
 
     if not filename.lower().endswith((".jpg", ".jpeg", ".png")):
@@ -62,9 +54,8 @@ for filename in sorted(os.listdir(IMAGE_FOLDER)):
     print("=" * 60)
     print("Processing :", filename)
 
-    # --------------------------
+
     # Ground Truth
-    # --------------------------
     row = gt_df[gt_df["image"] == filename]
 
     if row.empty:
@@ -73,9 +64,7 @@ for filename in sorted(os.listdir(IMAGE_FOLDER)):
 
     ground_truth = row.iloc[0]["ground_truth"].strip().upper()
 
-    # --------------------------
     # Encode Image
-    # --------------------------
     image_path = os.path.join(IMAGE_FOLDER, filename)
 
     mime = mimetypes.guess_type(image_path)[0] or "image/jpeg"
@@ -83,9 +72,8 @@ for filename in sorted(os.listdir(IMAGE_FOLDER)):
     with open(image_path, "rb") as f:
         image_data = base64.b64encode(f.read()).decode()
 
-    # --------------------------
+
     # OCR dengan LM Studio
-    # --------------------------
     try:
 
         response = client.chat.completions.create(
@@ -98,14 +86,10 @@ for filename in sorted(os.listdir(IMAGE_FOLDER)):
                     "content": [
                         {
                             "type": "text",
-                            "text": """
-Read the Indonesian vehicle license plate.
-
-Return ONLY the plate number.
-
-Example:
-B1234XYZ
-"""
+                            "text": (
+                                     "What is the license plate number shown in this image? "
+                                      "Respond only with the plate number."
+                )
                         },
                         {
                             "type": "image_url",
@@ -123,16 +107,13 @@ B1234XYZ
         print("Error :", e)
         continue
 
-    # --------------------------
     # Prediction
-    # --------------------------
     prediction = response.choices[0].message.content
 
     prediction = clean_prediction(prediction)
 
-    # --------------------------
-    # CER
-    # --------------------------
+
+    # CER    
     cer_score, S, D, I, N = calculate_cer(
         ground_truth,
         prediction
@@ -146,9 +127,8 @@ B1234XYZ
     print("N =", N)
     print("CER =", round(cer_score, 4))
 
-    # --------------------------
+ 
     # Simpan
-    # --------------------------
     results.append([
         filename,
         ground_truth,
@@ -160,9 +140,7 @@ B1234XYZ
         round(cer_score, 4)
     ])
 
-# ==============================
 # Simpan CSV
-# ==============================
 os.makedirs("output", exist_ok=True)
 
 df = pd.DataFrame(
@@ -184,7 +162,6 @@ df.to_csv(
     index=False
 )
 
-print("\n====================================")
+
 print("SELESAI")
-print("====================================")
 print(df.head())
